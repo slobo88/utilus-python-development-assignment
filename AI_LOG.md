@@ -62,3 +62,5 @@ for this create a new class called Metrics. this class should accept both data f
 8. "okay lets add some more checks to the data. countries must be e.g. NL, DE, as in capital letters and 2 letters. customer_id must also be unique"
 
 9. "on the subscriptions, a customer cant have 2 active subscriptions at the same time. add a validation for that as well. define this as active for the same customer there cannot be 2 rows on the file where the periode of start_date to end_date, overlaps with another"
+
+10. "update DESIGN.md"
