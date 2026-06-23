@@ -19,17 +19,18 @@ class Metrics:
         self.subscriptions_df = subscriptions_df
         self.output_json = output_json
 
-    def full_report(self):
-        self.monthly_mrr()
-        self.monthly_churned_customers_count()
-        self.signup_cohorts_with_3_month_retention()
+    def full_report(self) -> dict[str, list[dict[str, float | int | str]]]:
+        report = {}
+        report.update(self.monthly_mrr())
+        report.update(self.monthly_churned_customers_count())
+        report.update(self.signup_cohorts_with_3_month_retention())
+        self._write_report(report)
+        return report
 
     def monthly_mrr(self) -> dict[str, list[dict[str, float | str]]]:
-        """Return and write monthly MRR for each calendar month in the data window."""
+        """Return monthly MRR for each calendar month in the data window."""
         if self.subscriptions_df.empty:
-            report = {"monthly_mrr": []}
-            self._write_section(report)
-            return report
+            return {"monthly_mrr": []}
 
         window_start, window_end = self._reporting_window()
 
@@ -53,16 +54,12 @@ class Metrics:
                 }
             )
 
-        report = {"monthly_mrr": monthly_rows}
-        self._write_section(report)
-        return report
+        return {"monthly_mrr": monthly_rows}
 
     def monthly_churned_customers_count(self) -> dict[str, list[dict[str, int | str]]]:
-        """Return and write churned customer counts by calendar month."""
+        """Return churned customer counts by calendar month."""
         if self.subscriptions_df.empty:
-            report = {"monthly_churned_customers_count": []}
-            self._write_section(report)
-            return report
+            return {"monthly_churned_customers_count": []}
 
         subscriptions = self.subscriptions_df.sort_values(
             by=["customer_id", "start_date", "end_date"],
@@ -105,18 +102,14 @@ class Metrics:
             for month in pd.period_range(window_start, window_end, freq="M")
         ]
 
-        report = {"monthly_churned_customers_count": monthly_rows}
-        self._write_section(report)
-        return report
+        return {"monthly_churned_customers_count": monthly_rows}
 
     def signup_cohorts_with_3_month_retention(
         self,
     ) -> dict[str, list[dict[str, float | int | str]]]:
-        """Return and write 3-month retention metrics for signup cohorts."""
+        """Return 3-month retention metrics for signup cohorts."""
         if self.customers_df.empty:
-            report = {"signup_cohorts_with_3_month_retention": []}
-            self._write_section(report)
-            return report
+            return {"signup_cohorts_with_3_month_retention": []}
 
         customers = self.customers_df.copy()
         customers["signup_cohort"] = customers["signup_date"].dt.to_period("M").astype(str)
@@ -166,9 +159,7 @@ class Metrics:
             for _, row in cohort_summary.iterrows()
         ]
 
-        report = {"signup_cohorts_with_3_month_retention": cohort_rows}
-        self._write_section(report)
-        return report
+        return {"signup_cohorts_with_3_month_retention": cohort_rows}
 
     def _reporting_window(self) -> tuple[pd.Period, pd.Period]:
         window_start = self.subscriptions_df["start_date"].min().to_period("M")
@@ -183,15 +174,8 @@ class Metrics:
             window_end = latest_date.to_period("M")
         return window_start, window_end
 
-    def _write_section(
+    def _write_report(
         self,
-        report_section: dict[str, list[dict[str, float | int | str]]],
+        report: dict[str, list[dict[str, float | int | str]]],
     ) -> None:
-        report = self._load_report()
-        report.update(report_section)
         self.output_json.write_text(json.dumps(report, indent=2), encoding="utf-8")
-
-    def _load_report(self) -> dict[str, list[dict[str, float | int | str]]]:
-        if not self.output_json.exists():
-            return {}
-        return json.loads(self.output_json.read_text(encoding="utf-8"))

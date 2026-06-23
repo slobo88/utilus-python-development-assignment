@@ -64,3 +64,5 @@ for this create a new class called Metrics. this class should accept both data f
 9. "on the subscriptions, a customer cant have 2 active subscriptions at the same time. add a validation for that as well. define this as active for the same customer there cannot be 2 rows on the file where the periode of start_date to end_date, overlaps with another"
 
 10. "update DESIGN.md"
+
+11. "update. each `Metrics` function shoud not add to the output file in its run. lest add that only on the `full_report`"
