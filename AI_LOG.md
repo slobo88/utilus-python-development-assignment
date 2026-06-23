@@ -66,3 +66,5 @@ for this create a new class called Metrics. this class should accept both data f
 10. "update DESIGN.md"
 
 11. "update. each `Metrics` function shoud not add to the output file in its run. lest add that only on the `full_report`"
+
+12. "now lets add some simple tests using pytest. first lets start with Cover the churn logic and 3-month retention logic."
